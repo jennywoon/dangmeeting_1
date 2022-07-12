@@ -104,9 +104,15 @@ def save_img():
         username = payload["id"]
         name_receive = request.form["name_give"]
         about_receive = request.form["about_give"]
+        dogname_receive = request.form["dogname_give"]
+        dogage_receive = request.form["dogage_give"]
+        doggender_receive = request.form["doggender_give"]
         new_doc = {
             "profile_name": name_receive,
-            "profile_info": about_receive
+            "profile_info": about_receive,
+            "profile_dogname": dogname_receive,
+            "profile_dogage": dogage_receive,
+            "profile_doggender": doggender_receive
         }
         if 'file_give' in request.files:
             file = request.files["file_give"]
