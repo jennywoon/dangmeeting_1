@@ -2,126 +2,435 @@
 <html lang="en">
 <head>
 
-    <!-- Webpage Title -->
-    <title>댕미팅</title>
+  <!-- Webpage Title -->
+  <title>{{ user_info.name }} | 댕미팅</title>
 
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
-    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
-    <meta property="og:title" content="댕미팅-강아지들의 일탈프로젝트"/>
-    <meta property="og:description" content="mini project for Web Plus"/>
-    <meta property="og:image" content="{{ url_for('static', filename='ogimg.png') }}"/>
+  <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+  <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+  <meta property="og:title" content="댕미팅-강아지들의 일탈 프로젝트"/>
+  <meta property="og:description" content="mini project for Web Plus"/>
+  <meta property="og:image" content="{{ url_for('static', filename='ogimg.png') }}"/>
 
-    <!-- Bulma CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css">
-    <!-- Font Awesome CSS -->
-    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <link href="{{ url_for('static', filename='mystyle.css') }}" rel="stylesheet">
-    <!-- JS -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
-    <script src="{{ url_for('static', filename='myjs.js') }}"></script>
-    <script>
-        $(document).ready(function () {
-            get_posts()
-        })
-    </script>
+  <!-- Bulma CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css">
+  <!-- Font Awesome CSS -->
+  <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Gamja+Flower&family=Stylish&display=swap" rel="stylesheet">
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+
+  {# mystyle.css 불러오기 Bulma CSS 보다 무조건 아래에 배치해야함 #}
+  <link href="{{ url_for('static', filename='mystyle.css') }}" rel="stylesheet">
+
+
+  <!-- JS -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
+
+
+  <script>
+      {#            로그아웃 기능 #}
+
+      function sign_out() {
+          $.removeCookie('mytoken', {path: '/'});
+          alert('로그아웃!')
+          window.location.href = "/login"
+      }
+
+      {# !!!!!!!!!!!!!! 여기 수정해야함 !!!!!!!!!!!!!!!!! ******모달 프로필 수정 #}
+
+      function update_profile() {
+          let name = $('#input-name').val()
+          let species = $('#input-species').val()
+          let gender = $('#input-gender').val()
+          let age = $('#input-age').val()
+          let file = $('#input-pic')[0].files[0]
+          let about = $("#textarea-about").val()
+          let form_data = new FormData()
+          form_data.append("file_give", file)
+          form_data.append("name_give", name)
+          form_data.append("species_give", species)
+          form_data.append("gender_give", gender)
+          form_data.append("age_give", age)
+          form_data.append("about_give", about)
+          console.log(name, file, species, gender, age, about, form_data)
+
+          $.ajax({
+              type: "POST",
+              url: "/update_profile",
+              data: form_data,
+              cache: false,
+              contentType: false,
+              processData: false,
+              success: function (response) {
+                  if (response["result"] == "success") {
+                      alert(response["msg"])
+                      window.location.reload()
+
+                  }
+              }
+          });
+      }
+
+      function get_male_users() {
+
+          $('#my-cards-box').empty()
+
+          $.ajax({
+              type: "GET",
+              url: "/get_male_users",
+              data: {},
+              success: function (response) {
+                  let rows = response['males']
+                  for (i = 0; i < rows.length; i++) {
+                      let profile_info = rows[i]['profile_info']
+                      let profile_name = rows[i]['profile_name']
+                      let profile_gender = rows[i]['profile_gender']
+                      let profile_species = rows[i]['profile_species']
+                      let profile_age = rows[i]['profile_age']
+                      let username = rows[i]['username']
+
+
+                      let temp_html = `<div class="col">
+                                              <div class="card h-100">
+
+                                                    <img src="../static/profile_pics/${username}.jpg" class="card-img-top" alt="...">
+
+                                                <div class="card-body">
+                                                  <h5 class="card-title">${profile_name} @${username}</h5>
+                                                  <p>댕종: ${profile_species}   I   댕나이: ${profile_age}   I   댕성별: ${profile_gender}</p>
+                                                  <p class="card-text">"${profile_info}"</p>
+                                                </div>
+                                              </div>
+                                            </div>`
+
+                      $('#my-cards-box').append(temp_html);
+                  }
+              }
+          })
+      }
+
+      function get_female_users() {
+          $('#my-cards-box').empty()
+
+          $.ajax({
+              type: "GET",
+              url: "/get_female_users",
+              data: {},
+              success: function (response) {
+                  let rows = response['females']
+                  for (i = 0; i < rows.length; i++) {
+                      let profile_info = rows[i]['profile_info']
+                      let profile_name = rows[i]['profile_name']
+                      let profile_gender = rows[i]['profile_gender']
+                      let profile_species = rows[i]['profile_species']
+                      let profile_age = rows[i]['profile_age']
+                      let username = rows[i]['username']
+
+                      let temp_html = `<div class="col">
+                                              <div class="card h-100">
+
+                                                <img src="../static/profile_pics/${username}.jpg" class="card-img-top" alt="...">
+
+                                                <div class="card-body">
+                                                  <h5 class="card-title">${profile_name} @${username}</h5>
+                                                  <p>댕종: ${profile_species}   I   댕나이: ${profile_age}   I   댕성별: ${profile_gender}</p>
+                                                  <p class="card-text">"${profile_info}"</p>
+                                                </div>
+                                              </div>
+                                            </div>`
+
+                      $('#my-cards-box').append(temp_html);
+                  }
+              }
+          })
+      }
+
+  </script>
+
+  <style>
+
+
+    .my-cards {
+      margin: 20px auto 0px auto;
+      width: 95%;
+      max-width: 1500px;
+    }
+
+    * {
+      font-family: 'Stylish', sans-serif;
+    }
+  </style>
+
+
 </head>
+
+
 <body>
-<nav class="navbar is-fixed-top is-white" role="navigation" aria-label="main navigation">
-    <div class="navbar-brand">
-        <a class="navbar-item" href="/">
-            <img src="{{ url_for('static', filename='logo.png') }}">
-            <strong class="is-sparta"
-                    style="font-family: 'Stylish', sans-serif;font-size: larger;">댕미팅</strong>
-        </a>
-    </div>
-</nav>
-<section class="section">
+
+
+<section class="hero is-white">
+  <div class="hero-body has-text-centered" style="padding-bottom:1rem;margin:auto;">
+    <h1 class="title is-sparta"><img class="mainimg" src="{{ url_for('static', filename='heart.gif') }}">댕미팅<img
+            class="mainimg" src="{{ url_for('static', filename='heart.gif') }}">
+    </h1>
+  </div>
+</section>
+
+<div class="container">
+  <ul id="nav4" class="nav justify-content-between ">
+    <li class="nav-item">
+      <a class="nav-link active" href="#">dangmeeting</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="#">dangmeeting</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="#">dangmeeting</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="#">dangmeeting</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="#">dangmeeting</a>
+    </li>
+  </ul>
+</div>
+
+<section class="hero is-white">
+  <div class="hero" style="padding-bottom:2rem;padding-top:2rem;margin:auto;min-width: 400px">
+
     <article class="media">
-        <figure class="media-left" style="align-self: center">
-            <a class="image is-32x32" href="/user/{{ user_info.username }}">
-                <img class="is-rounded" src="{{ url_for('static', filename=user_info.profile_pic_real) }}">
-            </a>
-        </figure>
-        <div class="media-content">
-            <div class="field">
-                <p class="control">
-                    <input id="input-post" class="input is-rounded" placeholder="여기를 눌러서 내 강아지를 어필해주세요!"
-                           onclick='$("#modal-post").addClass("is-active")'></p>
-            </div>
+      <figure class="media-left" style="align-self: center">
+        <a class="image is-96x96" href="#">
+          <img class="is-rounded" src="{{ url_for('static', filename=user_info.profile_pic_real) }}">
+        </a>
+      </figure>
+
+
+      <div class="profile-card">
+        <p><strong><span class="profile-card-title">나의 강아지 정보</span></strong></p>
+        <div class="content">
+
+          <small></small><strong>댕이름</strong> : {{ user_info.profile_name }}</small> <small>( 사용자 아이디:
+          @{{ user_info.username }}
+          )</small>
+          <br>
+          <small><strong>댕종</strong> : {{ user_info.profile_species }} </small> <br>
+          <small><strong>댕성별</strong> : {{ user_info.profile_gender }} </small> <br>
+          <small><strong>댕나이</strong> : {{ user_info.profile_age }} </small> <br>
+          <small><strong>나의 '댕'은?</strong> : {{ user_info.profile_info }} </small> <br>
         </div>
+      </div>
+
+
+
+
+
     </article>
-    <div class="modal" id="modal-post">
-        <div class="modal-background" onclick='$("#modal-post").removeClass("is-active")'></div>
-        <div class="modal-content">
-            <div class="box">
-                <article class="media">
-                    <div class="media-content">
-                        <div class="field">
-                            <p class="control">
-                                        <textarea id="textarea-post" class="textarea"
-                                                  placeholder="여기를 눌러서 내 강아지를 어필해주세요!"></textarea>
-                            </p>
-                        </div>
-                        <nav class="level is-mobile">
-                            <div class="level-left">
 
-                            </div>
-                            <div class="level-right">
-                                <div class="level-item">
-                                    <a class="button is-sparta" onclick="post()">포스팅하기</a>
-                                </div>
-                                <div class="level-item">
-                                    <a class="button is-sparta is-outlined"
-                                       onclick='$("#modal-post").removeClass("is-active")'>취소</a>
-                                </div>
-                            </div>
-                        </nav>
-                    </div>
-                </article>
-            </div>
-        </div>
-        <button class="modal-close is-large" aria-label="close"
-                onclick='$("#modal-post").removeClass("is-active")'></button>
+
+
+
+  </div>
+</section>
+
+
+<section class="hero is-white">
+    <h1 style="text-align : center">오늘은 어떤 친구들을 만나볼까...?</h1>
+    <div class="hero" style="padding-bottom:1.8rem;margin:auto;min-width: 300px">
+        <article class="findFriends">
+            <button onclick='$("#modal-edit").addClass("is-active")' type="button" class="btn btn-warning">우리 댕댕이 등록 🐶
+                ️
+            </button>
+            <button onclick="get_male_users()" type="button" class="btn btn-warning">씩씩한 남자친구들 🙋‍♂️</button>
+            <button onclick="get_female_users()" type="button" class="btn btn-warning">아리따운 여자친구들 🙋‍♀️</button>
+            <button onclick='sign_out()' type="button" class="btn btn-warning">로그아웃</button>
+        </article>
     </div>
 </section>
-<section class="section">
-    <div id="post-box" class="container">
+
+
+
+
+
+
+    <div class="modal" id="modal-edit">
+      <div class="modal-background" onclick='$("#modal-edit").removeClass("is-active")'></div>
+
+
+      <div class="modal-content">
         <div class="box">
-            <article class="media">
-                <div class="media-left">
-                    <a class="image is-64x64" href="#">
-                        <img class="is-rounded"
-                             src={{ url_for("static", filename="profile_pics/profile_placeholder.png") }} alt="Image">
-                    </a>
-                </div>
-                <div class="media-content">
-                    <div class="content">
-                        <p>
-                            <strong>홍길동</strong> <small>@username</small> <small>10분 전</small>
-                            <br>
-                            글을 적는 칸
-                        </p>
-                    </div>
-                    <nav class="level is-mobile">
-                        <div class="level-left">
-                            <a class="level-item is-sparta" aria-label="heart" onclick="toggle_like('', 'heart')">
-                                <span class="icon is-small"><i class="fa fa-heart"
-                                                               aria-hidden="true"></i></span>&nbsp;<span
-                                    class="like-num">2.7k</span>
-                            </a>
-                        </div>
+          <article class="media">
+            <div class="media-content">
 
-                    </nav>
+
+              <div class="field">
+                <label class="label" for="input-name">댕이름</label>
+                <p class="control">
+                  <input id="input-name" class="input" placeholder="ex) 초코" value="{{ user_info.profile_name }}">
+                </p>
+              </div>
+
+
+              <div class="field">
+                <label class="label" for="input-species">댕종</label>
+                <p class="control">
+                  <input id="input-species" class="input" placeholder="ex) 요크셔테리어" value="{{ user_info.profile_species }}">
+                </p>
+              </div>
+
+              <div class="field">
+                <label class="label" for="input-age">댕나이</label>
+                <p class="control">
+                  <input id="input-age" class="input" placeholder="ex) 5살" value="{{ user_info.profile_age }}">
+                </p>
+              </div>
+
+
+
+              <div class="field">
+                <div class="select is-multiple">
+                  <strong>댕성별</strong>
+
+                  <select class="form-select" id="input-gender">
+                    <option>성별 선택</option>
+                    <option value="male">댕남</option>
+                    <option value="female">댕녀</option>
+                  </select>
+
+                  <small>재등록 시에도 꼭 다시 한번 <strong>* 성별을 재선택</strong> 부탁드립니다.</small>
                 </div>
-            </article>
+              </div>
+
+
+
+
+              <div class="field">
+                <label class="label" for="input-pic">댕사진</label>
+
+                <div class="control is-expanded">
+                  <div class="file has-name">
+                    <label class="file-label" style="width:100%">
+                      <input id="input-pic" class="file-input" type="file"
+                             name="resume">
+                      <span class="file-cta"><span class="file-icon"><i
+                              class="fa fa-upload"></i></span>
+                                <span class="file-label">파일 선택</span>
+                            </span>
+                      <span id="file-name" class="file-name"
+                            style="width:100%;max-width:100%">{{ user_info.profile_pic }}</span>
+                    </label>
+                  </div>
+
+                </div>
+              </div>
+
+
+              <div class="field">
+
+                <label class="label" for="textarea-about">나의 '댕'을 한마디로 어필한다면..?</label>
+
+                <p class="control">
+                  <textarea id="textarea-about" placeholder="ex) 공놀이를 무척 좋아하는 저희 집 초코입니다 ㅎㅎ" class="textarea">{{ user_info.profile_info }}</textarea>
+                </p>
+
+              </div>
+
+
+              <nav class="level is-mobile">
+                <div class="level-left">
+
+                </div>
+                <div class="level-right">
+                  <div class="level-item">
+                    <a class="button is-sparta" onclick="update_profile()">업데이트</a>
+                  </div>
+                  <div class="level-item">
+                    <a class="button is-sparta is-outlined"
+                       onclick='$("#modal-edit").removeClass("is-active")'>취소</a>
+                  </div>
+                </div>
+              </nav>
+
+            </div>
+          </article>
         </div>
+      </div>
 
+
+      <button class="modal-close is-large" aria-label="close"
+              onclick='$("#modal-edit").removeClass("is-active")'></button>
     </div>
+
+  </div>
 </section>
+
+
+<section class="section">
+  <article class="media">
+
+    <div class="media-content">
+      <div class="field">
+
+      </div>
+    </div>
+  </article>
+  <div class="modal" id="modal-post">
+    <div class="modal-background" onclick='$("#modal-post").removeClass("is-active")'></div>
+    <div class="modal-content">
+      <div class="box">
+        <article class="media">
+          <div class="media-content">
+            <div class="field">
+              <p class="control">
+                                  <textarea id="textarea-post" class="textarea"
+                                            placeholder="무슨 생각을 하고 계신가요?"></textarea>
+              </p>
+            </div>
+            <nav class="level is-mobile">
+              <div class="level-left">
+
+              </div>
+              <div class="level-right">
+                <div class="level-item">
+                  <a class="button is-sparta" onclick="post()">포스팅하기</a>
+                </div>
+                <div class="level-item">
+                  <a class="button is-sparta is-outlined"
+                     onclick='$("#modal-post").removeClass("is-active")'>취소</a>
+                </div>
+              </div>
+            </nav>
+          </div>
+        </article>
+      </div>
+    </div>
+    <button class="modal-close is-large" aria-label="close"
+            onclick='$("#modal-post").removeClass("is-active")'></button>
+  </div>
+
+
+</section>
+
+
+<div class="my-cards">
+  <div class="row row-cols-1 row-cols-md-4 g-4" id="my-cards-box">
+
+  </div>
+</div>
+
+
+
+
+
 </body>
+
+
 </html>
